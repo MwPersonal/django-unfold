@@ -418,7 +418,9 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
         """
         return [self.get_unfold_action(action) for action in self.actions_list or []]
 
-    def get_actions_detail(self, request: HttpRequest) -> List[UnfoldAction]:
+    def get_actions_detail(
+        self, request: HttpRequest, object_id: Optional[Any] = None
+    ) -> List[UnfoldAction]:
         return self._filter_unfold_actions_by_permissions(
             request, self._get_base_actions_detail()
         )
@@ -440,7 +442,9 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
         """
         return [self.get_unfold_action(action) for action in self.actions_row or []]
 
-    def get_actions_submit_line(self, request: HttpRequest) -> List[UnfoldAction]:
+    def get_actions_submit_line(
+        self, request: HttpRequest, object_id: Optional[Any] = None
+    ) -> List[UnfoldAction]:
         return self._filter_unfold_actions_by_permissions(
             request, self._get_base_actions_submit_line()
         )
@@ -540,7 +544,7 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
 
         actions = []
         if object_id:
-            for action in self.get_actions_detail(request):
+            for action in self.get_actions_detail(request, object_id=object_id):
                 actions.append(
                     {
                         "title": action.description,
@@ -553,7 +557,9 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
 
         extra_context.update(
             {
-                "actions_submit_line": self.get_actions_submit_line(request),
+                "actions_submit_line": self.get_actions_submit_line(
+                    request, object_id=object_id
+                ),
                 "actions_detail": actions,
             }
         )
@@ -619,7 +625,7 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
     ) -> None:
         super().save_model(request, obj, form, change)
 
-        for action in self.get_actions_submit_line(request):
+        for action in self.get_actions_submit_line(request, object_id=obj.pk):
             if action.action_name not in request.POST:
                 continue
 
